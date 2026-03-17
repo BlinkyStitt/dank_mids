@@ -118,10 +118,20 @@ def _configure_concurrent_future_work_queue_size() -> None:
     This function increases the EXTRA_QUEUED_CALLS value to 50,000, which allows for more
     concurrent operations to be queued in the process pool. This can significantly improve
     performance for applications that make heavy use of brownie.
+
+    On macOS, POSIX semaphores are limited to SEM_VALUE_MAX (32767), so the value
+    is capped to avoid OSError when creating ProcessPoolExecutor instances.
     """
     import concurrent.futures.process as _cfp
+    import sys
 
-    _cfp.EXTRA_QUEUED_CALLS = 50_000
+    desired = 50_000
+    if sys.platform == "darwin":
+        _SEM_VALUE_MAX = 32_767
+        # ProcessPoolExecutor queue size = max_workers + EXTRA_QUEUED_CALLS,
+        # and the resulting BoundedSemaphore value must not exceed SEM_VALUE_MAX.
+        desired = min(desired, _SEM_VALUE_MAX - 1)
+    _cfp.EXTRA_QUEUED_CALLS = desired
 
 
 def _ensure_side_effects() -> None:

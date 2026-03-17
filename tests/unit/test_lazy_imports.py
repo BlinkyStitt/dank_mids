@@ -29,6 +29,7 @@ def test_import_applies_side_effects() -> None:
     payload = _run(
         """
 import json
+import sys
 import concurrent.futures.process as cfp
 
 before = cfp.EXTRA_QUEUED_CALLS
@@ -38,10 +39,12 @@ after = cfp.EXTRA_QUEUED_CALLS
 print(json.dumps({
     "queued_before": before,
     "queued_after": after,
+    "platform": sys.platform,
 }))
 """
     )
-    assert payload["queued_after"] == 50_000
+    expected = 32_766 if payload["platform"] == "darwin" else 50_000
+    assert payload["queued_after"] == expected
 
 
 def test_brownie_error_accessible() -> None:
@@ -86,10 +89,12 @@ after = cfp.EXTRA_QUEUED_CALLS
 print(json.dumps({
     "queued_before": before,
     "queued_after": after,
+    "platform": sys.platform,
 }))
 """
     )
-    assert payload["queued_after"] == 50_000
+    expected = 32_766 if payload["platform"] == "darwin" else 50_000
+    assert payload["queued_after"] == expected
 
 
 def test_helpers_import_triggers_side_effects() -> None:
