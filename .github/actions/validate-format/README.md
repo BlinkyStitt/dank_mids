@@ -1,0 +1,1 @@
+Validate the existing Python, JSON, YAML, and TOML formatting contract without committing or pushing. Python versions match the former formatter action. All tools operate on tracked files owned by this repository. Git submodules and caches stay outside the formatter input. A diff fails validation.
